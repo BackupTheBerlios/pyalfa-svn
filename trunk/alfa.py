@@ -1,0 +1,196 @@
+#!/usr/bin/python
+#
+# Biblioteca para gerenciar o Kit Alfa da PNCA <http://www.pnca.com.br>
+#
+# Autores: Leandro Augusto Fogolin Pereira <leandro@linuxmag.com.br>
+#          Fernando Paolieri Neto <fernando@cronuxs.net>
+#
+
+import serial
+import time
+
+MODE_CAPTURE = 0
+MODE_NORMAL  = 1
+
+MOTOR_BOTH  = 0
+MOTOR_RIGHT = 1
+MOTOR_LEFT  = 2
+
+class AlfaException:
+  def __init__(self, cod):
+    self._cod = cod
+  def __cmp__(self, cod):
+    return self._cod == cod
+
+class Alfa:
+  def __init__(self):
+    """ Opens the connection with the robot. """
+    self._serial = serial.Serial(0)
+    self._serial.timeout = 0.1
+    self._mode = MODE_NORMAL
+
+    if not self.ping():
+      raise AlfaException("RobotNotResponding")
+
+  def _setMode(self, mode):
+    """ Sets the current operating mode. Raises AlfaException("InvalidMode") on invalid
+    modes, does nothing if mode is current. """
+    
+    if self._mode == mode:
+      return
+    elif mode == MODE_CAPTURE:
+      self._sendCommand("Ms")
+      self._mode = mode
+    elif mode == MODE_NORMAL:
+      self._sendCommand("Mf")
+      self._mode = mode
+    else:
+      raise AlfaException("InvalidMode")
+      
+    """
+    Esse codigo aqui eu nao consigo entender... pode explicar depois pq nao pode ser
+    do jeito que escrevi acima?   -- Leandro
+    
+    if self._mode == MODE_CAPTURE:
+      self._sendCommand("Mf")
+      self._mode = MODE_NORMAL
+      self._setMode(mode)
+       
+    elif self._mode == MODE_NORMAL:
+      if mode == MODE_CAPTURE:
+        self._sendCommand("Ms")
+	self._mode = mode"""
+
+  def _sendCommand(self, cmd):
+    """ Sends a command to the robot. """
+
+    self._serial.flushInput()
+    self._serial.write("%s\r" % cmd)
+    self._serial.flushOutput()
+    time.sleep(0.05)
+  
+  def _readResponse(self, bufsize = 10000):
+    return self._serial.read(bufsize)
+  
+  def ping(self):
+    """ Returns True if the robot is responding. """
+
+    self._setMode(MODE_NORMAL)
+    self._sendCommand("ping")
+    return "pong" in self._readResponse()
+
+  def readSensors(self):
+    """ Returns a dictionary with the sensor values. """
+    
+    self._setMode(MODE_CAPTURE)
+    while self._serial.inWaiting() > 300:
+      self._serial.read(1)
+    #self._serial.flushOutput()
+    sensors = self._readResponse(300).split('\r\n')[1:]
+
+    while sensors[0][0] != "a":
+      sensors = sensors[1:]
+      
+    sensors = [ int(s[1:]) for s in sensors[0:12] ]
+    return { "S1"     : not sensors[0],
+             "S2"     : not sensors[1],
+	     "S3"     :     sensors[2],
+	     "S4"     :     sensors[3],
+	     "S5"     : not sensors[4],
+	     "S6"     : not sensors[5], 
+	     "S7"     :     sensors[6],
+	     "S8"     :     sensors[7],
+	     "CPUBat" :     sensors[8],
+	     "MOTBat" :     sensors[9],
+	     "MOTERR" : not sensors[10],
+	     "BtEnt"  : not sensors[11] }
+
+  def identify(self):
+    """ Returns a dictionary with the robot identification (name, version and revision). """
+  
+    self._setMode(MODE_NORMAL)
+    self._sendCommand("Mn")
+    response = self._readResponse(50).split("\r\n")[1:4]
+
+    return { "name"    : response[0][1:], 
+             "version" : response[1][1:], 
+	     "revision": response[2][1:] }
+	     
+  def motorSpeed(self, speed, motor = MOTOR_BOTH):
+    """ Sets a given motor speed.
+    
+    Minimum speed is -10, maximum is 10. 0 the motor stops. Raises 
+    AlfaException("InvalidSpeed") if speed is invalid. """
+    
+    if not (-10 <= speed <= 10):
+      raise AlfaException("InvalidSpeed")
+    
+    if not (MOTOR_BOTH <= motor <= MOTOR_LEFT):
+      raise AlfaException("InvalidMotor")
+    
+    speed += 11
+    self._setMode(MODE_CAPTURE)
+
+    if motor == MOTOR_BOTH or motor == MOTOR_LEFT:
+      self._sendCommand("Me")
+      self._sendCommand("%d" % speed)
+
+    if motor == MOTOR_BOTH or motor == MOTOR_RIGHT:
+      self._sendCommand("Md")
+      self._sendCommand("%d" % speed)
+  
+  def motorForward(self, speed):
+    self.motorSpeed(speed, MOTOR_BOTH)
+
+  def motorBackward(self, speed):
+    self.motorForward(-speed)
+
+  def motorLeft(self, speed):
+    self.motorSpeed(speed, MOTOR_LEFT)
+    self.motorSpeed(0, MOTOR_RIGHT)
+
+  def motorRight(self, speed):
+    self.motorSpeed(0, MOTOR_LEFT)
+    self.motorSpeed(speed, MOTOR_RIGHT)
+
+  def motorStop(self):
+    self.motorSpeed(0, MOTOR_BOTH)
+  
+  def sound(self, frequency, duration):
+    self.soundStart(frequency)
+    time.sleep(duration)
+    self.soundStop()
+  
+  def soundStart(self, frequency):
+    self._setMode(MODE_CAPTURE)
+    self._sendCommand("MM")
+    self._sendCommand("%d" % frequency)
+
+  def soundStop(self):
+    self._setMode(MODE_CAPTURE)
+    self._sendCommand("Mm")
+  
+  def __del__(self):
+    self._setMode(MODE_NORMAL)
+    self._serial.close()
+
+if __name__ == '__main__':
+  l = Alfa()
+  print l.ping()
+  print l.readSensors()
+  print l.identify()
+  l.motorSpeed(10)
+  print "anda"
+  time.sleep(2)
+  l.motorSpeed(0)
+  l.sound(50, 2)
+ 
+  while 1: 
+      a = l.readSensors()
+      print "\033[H\033[2J"
+      #print a
+      k = a.keys()
+      k.sort()
+      for i in k:
+        print i, a[i]
+
