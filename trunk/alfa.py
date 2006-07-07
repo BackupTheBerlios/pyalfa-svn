@@ -9,8 +9,8 @@
 import serial
 import time
 
-MODE_CAPTURE = 0
-MODE_NORMAL  = 1
+MODE_NORMAL  = 0
+MODE_CAPTURE = 1
 
 MOTOR_BOTH  = 0
 MOTOR_RIGHT = 1
@@ -28,6 +28,9 @@ class Alfa:
     self._serial = serial.Serial(0)
     self._serial.timeout = 0.1
     self._mode = MODE_NORMAL
+    self._md = 0
+    self._me = 0
+    self._sound = False
 
     if not self.ping():
       raise AlfaException("RobotNotResponding")
@@ -35,7 +38,7 @@ class Alfa:
   def _setMode(self, mode):
     """ Sets the current operating mode. Raises AlfaException("InvalidMode") on invalid
     modes, does nothing if mode is current. """
-    
+    """
     if self._mode == mode:
       return
     elif mode == MODE_CAPTURE:
@@ -47,9 +50,16 @@ class Alfa:
     else:
       raise AlfaException("InvalidMode")
       
-    """
+    
     Esse codigo aqui eu nao consigo entender... pode explicar depois pq nao pode ser
     do jeito que escrevi acima?   -- Leandro
+    """
+    if self._mode == mode: return
+    if self._md != 0 or self._me != 0: 
+      raise AlfaException("Can't Change Mode With Motors On")
+    
+    if self._sound :
+      raise AlfaException("Can't Change Mode With Sound On")
     
     if self._mode == MODE_CAPTURE:
       self._sendCommand("Mf")
@@ -59,11 +69,13 @@ class Alfa:
     elif self._mode == MODE_NORMAL:
       if mode == MODE_CAPTURE:
         self._sendCommand("Ms")
-	self._mode = mode"""
+	self._mode = mode
+    """
+    da maneira que estava e possivel adcionar novos modos com facilidade! -- Fernando
+	"""
 
   def _sendCommand(self, cmd):
     """ Sends a command to the robot. """
-
     self._serial.flushInput()
     self._serial.write("%s\r" % cmd)
     self._serial.flushOutput()
@@ -85,7 +97,6 @@ class Alfa:
     self._setMode(MODE_CAPTURE)
     while self._serial.inWaiting() > 300:
       self._serial.read(1)
-    #self._serial.flushOutput()
     sensors = self._readResponse(300).split('\r\n')[1:]
 
     while sensors[0][0] != "a":
@@ -109,9 +120,16 @@ class Alfa:
     """ Returns a dictionary with the robot identification (name, version and revision). """
   
     self._setMode(MODE_NORMAL)
+    while self._serial.inWaiting() > 0:
+          self._serial.read(1)
     self._sendCommand("Mn")
-    response = self._readResponse(50).split("\r\n")[1:4]
-
+    response = self._readResponse(300).split("\r\n")
+ 
+    while response[0][0] != 'r':
+      response = response[1:]
+      if response == [] :
+        return self.identify()	      
+    
     return { "name"    : response[0][1:], 
              "version" : response[1][1:], 
 	     "revision": response[2][1:] }
@@ -127,34 +145,36 @@ class Alfa:
     
     if not (MOTOR_BOTH <= motor <= MOTOR_LEFT):
       raise AlfaException("InvalidMotor")
-    
+   
     speed += 11
     self._setMode(MODE_CAPTURE)
 
     if motor == MOTOR_BOTH or motor == MOTOR_LEFT:
+      self._me = speed - 11
       self._sendCommand("Me")
       self._sendCommand("%d" % speed)
 
     if motor == MOTOR_BOTH or motor == MOTOR_RIGHT:
+      self._md = speed - 11
       self._sendCommand("Md")
       self._sendCommand("%d" % speed)
   
   def motorForward(self, speed):
-    self.motorSpeed(speed, MOTOR_BOTH)
+    self.motorSpeed(speed)
 
   def motorBackward(self, speed):
     self.motorForward(-speed)
 
   def motorLeft(self, speed):
-    self.motorSpeed(speed, MOTOR_LEFT)
-    self.motorSpeed(0, MOTOR_RIGHT)
+    self.motorSpeed( speed,MOTOR_LEFT)
+    self.motorSpeed(-speed,MOTOR_RIGHT)
 
   def motorRight(self, speed):
-    self.motorSpeed(0, MOTOR_LEFT)
-    self.motorSpeed(speed, MOTOR_RIGHT)
+    self.motorSpeed(-speed,MOTOR_LEFT)
+    self.motorSpeed( speed,MOTOR_RIGHT)
 
   def motorStop(self):
-    self.motorSpeed(0, MOTOR_BOTH)
+    self.motorSpeed(0)
   
   def sound(self, frequency, duration):
     self.soundStart(frequency)
@@ -165,12 +185,18 @@ class Alfa:
     self._setMode(MODE_CAPTURE)
     self._sendCommand("MM")
     self._sendCommand("%d" % frequency)
+    self._sound = True
 
   def soundStop(self):
     self._setMode(MODE_CAPTURE)
     self._sendCommand("Mm")
+    self._sound = False
   
   def __del__(self):
+    if self._sound:
+      self.soundStop()
+    if self._me != 0 or self._md != 0:
+      self.motorSpeed(0)
     self._setMode(MODE_NORMAL)
     self._serial.close()
 
@@ -184,13 +210,19 @@ if __name__ == '__main__':
   time.sleep(2)
   l.motorSpeed(0)
   l.sound(50, 2)
- 
-  while 1: 
-      a = l.readSensors()
-      print "\033[H\033[2J"
-      #print a
-      k = a.keys()
-      k.sort()
-      for i in k:
-        print i, a[i]
+
+  try:
+    while 1: 
+        a = l.readSensors()
+        #print "\033[H\033[2J"
+        #print a
+        k = a.keys()
+        k.sort()
+        for i in k:
+          print i, a[i]
+  except KeyboardInterrupt :
+    del(l)
+    print "Bye" 
+  except AlfaException:
+    print AlfaException._cod
 
