@@ -16,6 +16,14 @@ MOTOR_BOTH  = 0
 MOTOR_RIGHT = 1
 MOTOR_LEFT  = 2
 
+SERVO_TABELA ={ 
+'A': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
+'B': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
+'C': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
+'D': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 }}
+
+SERVO = { 'A':'o' , 'B':'p', 'C':'q', 'D':'r'}
+
 class AlfaException:
   def __init__(self, cod):
     self._cod = cod
@@ -116,11 +124,21 @@ class Alfa:
 	     "MOTERR" : not sensors[10],
 	     "BtEnt"  : not sensors[11] }
 
+  def servo(self, id, angle):
+    if not (SERVO_TABELA.haskey(id)):
+      raise AlfaException("InvalidServo")
+    if not (SERVO_TABELA[id].haskey(angle))
+      raise AlfaException("InvalidAngle")
+   self._setMode(MODE_CAPTURE)
+   self._sendcommand("M%s" % SERVO[id])
+   self._sendcommand("%d" % SERVO_TABELA[id][angle]) 
+
   def identify(self):
     """ Returns a dictionary with the robot identification (name, version and revision). """
   
     self._setMode(MODE_NORMAL)
-    while self._serial.inWaiting() > 0:
+    
+while self._serial.inWaiting() > 0:
           self._serial.read(1)
     self._sendCommand("Mn")
     response = self._readResponse(300).split("\r\n")
