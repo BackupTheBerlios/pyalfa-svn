@@ -626,9 +626,7 @@
 				  <property name="column_spacing">0</property>
 
 				  <child>
-				    <widget class="GtkRadioButton" id="btnMotorRight">
-				      <property name="width_request">30</property>
-				      <property name="height_request">30</property>
+				    <widget class="GtkRadioButton" id="btnMotorStop">
 				      <property name="visible">True</property>
 				      <property name="can_focus">True</property>
 				      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -638,7 +636,71 @@
 				      <property name="draw_indicator">False</property>
 
 				      <child>
-					<widget class="GtkArrow" id="arrow2">
+					<widget class="GtkImage" id="image6">
+					  <property name="visible">True</property>
+					  <property name="stock">gtk-stop</property>
+					  <property name="icon_size">4</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="left_attach">1</property>
+				      <property name="right_attach">2</property>
+				      <property name="top_attach">1</property>
+				      <property name="bottom_attach">2</property>
+				      <property name="x_options">fill</property>
+				      <property name="y_options"></property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkRadioButton" id="btnMotorUp">
+				      <property name="visible">True</property>
+				      <property name="can_focus">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">False</property>
+				      <property name="group">btnMotorStop</property>
+
+				      <child>
+					<widget class="GtkArrow" id="arrow5">
+					  <property name="visible">True</property>
+					  <property name="arrow_type">GTK_ARROW_UP</property>
+					  <property name="shadow_type">GTK_SHADOW_OUT</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="left_attach">1</property>
+				      <property name="right_attach">2</property>
+				      <property name="top_attach">0</property>
+				      <property name="bottom_attach">1</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkRadioButton" id="btnMotorRight">
+				      <property name="visible">True</property>
+				      <property name="can_focus">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">False</property>
+				      <property name="group">btnMotorStop</property>
+
+				      <child>
+					<widget class="GtkArrow" id="arrow4">
 					  <property name="visible">True</property>
 					  <property name="arrow_type">GTK_ARROW_RIGHT</property>
 					  <property name="shadow_type">GTK_SHADOW_OUT</property>
@@ -654,14 +716,11 @@
 				      <property name="right_attach">3</property>
 				      <property name="top_attach">1</property>
 				      <property name="bottom_attach">2</property>
-				      <property name="x_options">fill</property>
 				    </packing>
 				  </child>
 
 				  <child>
-				    <widget class="GtkRadioButton" id="btnMotorLeft">
-				      <property name="width_request">30</property>
-				      <property name="height_request">30</property>
+				    <widget class="GtkRadioButton" id="btnMotorDown">
 				      <property name="visible">True</property>
 				      <property name="can_focus">True</property>
 				      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -669,7 +728,38 @@
 				      <property name="active">False</property>
 				      <property name="inconsistent">False</property>
 				      <property name="draw_indicator">False</property>
-				      <property name="group">btnMotorRight</property>
+				      <property name="group">btnMotorStop</property>
+
+				      <child>
+					<widget class="GtkArrow" id="arrow6">
+					  <property name="visible">True</property>
+					  <property name="arrow_type">GTK_ARROW_DOWN</property>
+					  <property name="shadow_type">GTK_SHADOW_OUT</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="left_attach">1</property>
+				      <property name="right_attach">2</property>
+				      <property name="top_attach">2</property>
+				      <property name="bottom_attach">3</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkRadioButton" id="btnMotorLeft">
+				      <property name="visible">True</property>
+				      <property name="can_focus">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">False</property>
+				      <property name="group">btnMotorStop</property>
 
 				      <child>
 					<widget class="GtkArrow" id="arrow3">
@@ -686,106 +776,6 @@
 				    <packing>
 				      <property name="left_attach">0</property>
 				      <property name="right_attach">1</property>
-				      <property name="top_attach">1</property>
-				      <property name="bottom_attach">2</property>
-				      <property name="x_options">fill</property>
-				    </packing>
-				  </child>
-
-				  <child>
-				    <widget class="GtkRadioButton" id="btnMotorUp">
-				      <property name="width_request">30</property>
-				      <property name="height_request">30</property>
-				      <property name="visible">True</property>
-				      <property name="can_focus">True</property>
-				      <property name="relief">GTK_RELIEF_NORMAL</property>
-				      <property name="focus_on_click">True</property>
-				      <property name="active">False</property>
-				      <property name="inconsistent">False</property>
-				      <property name="draw_indicator">False</property>
-				      <property name="group">btnMotorRight</property>
-
-				      <child>
-					<widget class="GtkArrow" id="arrow4">
-					  <property name="visible">True</property>
-					  <property name="arrow_type">GTK_ARROW_UP</property>
-					  <property name="shadow_type">GTK_SHADOW_OUT</property>
-					  <property name="xalign">0.5</property>
-					  <property name="yalign">0.5</property>
-					  <property name="xpad">0</property>
-					  <property name="ypad">0</property>
-					</widget>
-				      </child>
-				    </widget>
-				    <packing>
-				      <property name="left_attach">1</property>
-				      <property name="right_attach">2</property>
-				      <property name="top_attach">0</property>
-				      <property name="bottom_attach">1</property>
-				      <property name="x_options">fill</property>
-				    </packing>
-				  </child>
-
-				  <child>
-				    <widget class="GtkRadioButton" id="btnMotorDown">
-				      <property name="width_request">30</property>
-				      <property name="height_request">30</property>
-				      <property name="visible">True</property>
-				      <property name="can_focus">True</property>
-				      <property name="relief">GTK_RELIEF_NORMAL</property>
-				      <property name="focus_on_click">True</property>
-				      <property name="active">False</property>
-				      <property name="inconsistent">False</property>
-				      <property name="draw_indicator">False</property>
-				      <property name="group">btnMotorRight</property>
-
-				      <child>
-					<widget class="GtkArrow" id="arrow5">
-					  <property name="visible">True</property>
-					  <property name="arrow_type">GTK_ARROW_DOWN</property>
-					  <property name="shadow_type">GTK_SHADOW_OUT</property>
-					  <property name="xalign">0.5</property>
-					  <property name="yalign">0.5</property>
-					  <property name="xpad">0</property>
-					  <property name="ypad">0</property>
-					</widget>
-				      </child>
-				    </widget>
-				    <packing>
-				      <property name="left_attach">1</property>
-				      <property name="right_attach">2</property>
-				      <property name="top_attach">2</property>
-				      <property name="bottom_attach">3</property>
-				      <property name="x_options">fill</property>
-				    </packing>
-				  </child>
-
-				  <child>
-				    <widget class="GtkRadioButton" id="btnMotorStop">
-				      <property name="visible">True</property>
-				      <property name="can_focus">True</property>
-				      <property name="relief">GTK_RELIEF_NORMAL</property>
-				      <property name="focus_on_click">True</property>
-				      <property name="active">True</property>
-				      <property name="inconsistent">False</property>
-				      <property name="draw_indicator">False</property>
-				      <property name="group">btnMotorRight</property>
-
-				      <child>
-					<widget class="GtkImage" id="image3">
-					  <property name="visible">True</property>
-					  <property name="stock">gtk-stop</property>
-					  <property name="icon_size">4</property>
-					  <property name="xalign">0.5</property>
-					  <property name="yalign">0.5</property>
-					  <property name="xpad">0</property>
-					  <property name="ypad">0</property>
-					</widget>
-				      </child>
-				    </widget>
-				    <packing>
-				      <property name="left_attach">1</property>
-				      <property name="right_attach">2</property>
 				      <property name="top_attach">1</property>
 				      <property name="bottom_attach">2</property>
 				    </packing>
@@ -1126,8 +1116,8 @@
 				  <property name="can_focus">True</property>
 				  <property name="draw_value">True</property>
 				  <property name="value_pos">GTK_POS_RIGHT</property>
-				  <property name="digits">1</property>
-				  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
+				  <property name="digits">0</property>
+				  <property name="update_policy">GTK_UPDATE_DELAYED</property>
 				  <property name="inverted">False</property>
 				  <property name="adjustment">0 0 180 15 0 0</property>
 				</widget>
@@ -1146,8 +1136,8 @@
 				  <property name="can_focus">True</property>
 				  <property name="draw_value">True</property>
 				  <property name="value_pos">GTK_POS_RIGHT</property>
-				  <property name="digits">1</property>
-				  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
+				  <property name="digits">0</property>
+				  <property name="update_policy">GTK_UPDATE_DELAYED</property>
 				  <property name="inverted">False</property>
 				  <property name="adjustment">0 0 180 15 0 0</property>
 				</widget>
@@ -1167,8 +1157,8 @@
 				  <property name="can_focus">True</property>
 				  <property name="draw_value">True</property>
 				  <property name="value_pos">GTK_POS_RIGHT</property>
-				  <property name="digits">1</property>
-				  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
+				  <property name="digits">0</property>
+				  <property name="update_policy">GTK_UPDATE_DELAYED</property>
 				  <property name="inverted">False</property>
 				  <property name="adjustment">0 0 180 15 0 0</property>
 				</widget>
@@ -1188,8 +1178,8 @@
 				  <property name="can_focus">True</property>
 				  <property name="draw_value">True</property>
 				  <property name="value_pos">GTK_POS_RIGHT</property>
-				  <property name="digits">1</property>
-				  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
+				  <property name="digits">0</property>
+				  <property name="update_policy">GTK_UPDATE_DELAYED</property>
 				  <property name="inverted">False</property>
 				  <property name="adjustment">0 0 180 15 0 0</property>
 				</widget>
@@ -1212,7 +1202,7 @@
 				  <property name="justify">GTK_JUSTIFY_LEFT</property>
 				  <property name="wrap">False</property>
 				  <property name="selectable">False</property>
-				  <property name="xalign">0.920000016689</property>
+				  <property name="xalign">0.949999988079</property>
 				  <property name="yalign">0.5</property>
 				  <property name="xpad">0</property>
 				  <property name="ypad">0</property>
@@ -1314,7 +1304,7 @@
 				  <property name="draw_value">True</property>
 				  <property name="value_pos">GTK_POS_RIGHT</property>
 				  <property name="digits">0</property>
-				  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
+				  <property name="update_policy">GTK_UPDATE_DELAYED</property>
 				  <property name="inverted">False</property>
 				  <property name="adjustment">1 1 15000 0 0 0</property>
 				</widget>
@@ -1340,7 +1330,7 @@
 				    <widget class="GtkImage" id="image4">
 				      <property name="visible">True</property>
 				      <property name="stock">gtk-media-play</property>
-				      <property name="icon_size">4</property>
+				      <property name="icon_size">2</property>
 				      <property name="xalign">0.5</property>
 				      <property name="yalign">0.5</property>
 				      <property name="xpad">0</property>
