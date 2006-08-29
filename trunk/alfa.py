@@ -38,12 +38,17 @@ class AlfaException:
 class Alfa(object):
   def __init__(self):
     """ Opens the connection with the robot. """
-    self._serial = serial.Serial(0)
-    self._serial.timeout = 0.1
+    
     self._mode = MODE_NORMAL
     self._md = 0
     self._me = 0
     self._sound = False
+
+    try:
+      self._serial = serial.Serial(0)
+      self._serial.timeout = 0.1
+    except serial.serialutil.SerialException:
+      raise AlfaException("SerialPortError")
 
     if not self.ping():
       raise AlfaException("RobotNotResponding")
@@ -69,10 +74,10 @@ class Alfa(object):
     """
     if self._mode == mode: return
     if self._md != 0 or self._me != 0: 
-      raise AlfaException("Can't Change Mode With Motors On")
+      raise AlfaException("MotorOnError")
     
     if self._sound:
-      raise AlfaException("Can't Change Mode With Sound On")
+      raise AlfaException("SoundOnError")
     
     if self._mode == MODE_CAPTURE:
       self._sendCommand("Mf")
@@ -239,7 +244,11 @@ class Alfa(object):
     if self._me != 0 or self._md != 0:
       self.motorSpeed(0)
     self._setMode(MODE_NORMAL)
-    self._serial.close()
+    
+    try:
+      self._serial.close()
+    except AttributeError:
+      pass
 
 if __name__ == '__main__':
   l = Alfa()
