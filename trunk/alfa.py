@@ -16,13 +16,18 @@ MOTOR_BOTH  = 0
 MOTOR_RIGHT = 1
 MOTOR_LEFT  = 2
 
-SERVO_TABELA ={ 
-'A': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
-'B': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
-'C': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 },
-'D': { 0 : 15 , 15:21, 30:27, 45:33, 60:39, 75:45, 90:49, 105:57, 120:63, 135:69, 150:75, 165:78, 180:81 }}
+SERVO_ANGLE_TABLE = { 
+  'A': { 0: 15, 15: 21, 30: 27, 45: 33, 60: 39, 75: 45, 90: 49, 105: 57,
+         120: 63, 135: 69, 150: 75, 165: 78, 180: 81 },
+  'B': { 0: 15, 15: 21, 30: 27, 45: 33, 60: 39, 75: 45, 90: 49, 105: 57,
+         120: 63, 135: 69, 150: 75, 165: 78, 180: 81 },
+  'C': { 0: 15, 15: 21, 30: 27, 45: 33, 60: 39, 75: 45, 90: 49, 105: 57,
+         120: 63, 135: 69, 150: 75, 165: 78, 180: 81 },
+  'D': { 0: 15, 15: 21, 30: 27, 45: 33, 60: 39, 75: 45, 90: 49, 105: 57,
+         120: 63, 135: 69, 150: 75, 165: 78, 180: 81 }
+}
 
-SERVO = { 'A':'o' , 'B':'p', 'C':'q', 'D':'r'}
+SERVO = { 'A': 'o' , 'B': 'p', 'C': 'q', 'D': 'r'}
 
 class AlfaException:
   def __init__(self, cod):
@@ -30,7 +35,7 @@ class AlfaException:
   def __cmp__(self, cod):
     return self._cod == cod
 
-class Alfa:
+class Alfa(object):
   def __init__(self):
     """ Opens the connection with the robot. """
     self._serial = serial.Serial(0)
@@ -66,7 +71,7 @@ class Alfa:
     if self._md != 0 or self._me != 0: 
       raise AlfaException("Can't Change Mode With Motors On")
     
-    if self._sound :
+    if self._sound:
       raise AlfaException("Can't Change Mode With Sound On")
     
     if self._mode == MODE_CAPTURE:
@@ -124,28 +129,46 @@ class Alfa:
 	     "MOTERR" : not sensors[10],
 	     "BtEnt"  : not sensors[11] }
 
-  def servo(self, id, angle):
-    if not (SERVO_TABELA.haskey(id)):
+  def getServoApproximateAngle(self, servo, angle):
+    angle = int(angle)
+  
+    if not SERVO_ANGLE_TABLE.haskey(id):
       raise AlfaException("InvalidServo")
-    if not (SERVO_TABELA[id].haskey(angle))
+    if SERVO_ANGLE_TABLE[id].haskey(angle):
+      return SERVO_ANGLE_TABLE[id][angle]
+    
+    for a in sorted(SERVO_ANGLE_TABLE[id].keys()):
+      if angle >= a:
+        return a
+    
+    raise AlfaException("InvalidAngle")
+    
+  def moveServo(self, id, angle):
+    angle = int(angle)
+  
+    if not SERVO_ANGLE_TABLE.haskey(id):
+      raise AlfaException("InvalidServo")
+    if not SERVO_ANGLE_TABLE[id].haskey(angle):
       raise AlfaException("InvalidAngle")
-   self._setMode(MODE_CAPTURE)
-   self._sendcommand("M%s" % SERVO[id])
-   self._sendcommand("%d" % SERVO_TABELA[id][angle]) 
+      
+    self._setMode(MODE_CAPTURE)
+    self._sendcommand("M%s" % SERVO[id])
+    self._sendcommand("%d" % SERVO_ANGLE_TABLE[id][angle]) 
 
   def identify(self):
     """ Returns a dictionary with the robot identification (name, version and revision). """
   
     self._setMode(MODE_NORMAL)
     
-while self._serial.inWaiting() > 0:
-          self._serial.read(1)
+    while self._serial.inWaiting() > 0:
+      self._serial.read(1)
+    
     self._sendCommand("Mn")
     response = self._readResponse(300).split("\r\n")
  
     while response[0][0] != 'r':
       response = response[1:]
-      if response == [] :
+      if response == []:
         return self.identify()	      
     
     return { "name"    : response[0][1:], 

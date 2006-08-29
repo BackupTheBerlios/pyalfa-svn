@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Interface gr·fica para gerenciar o Kit Alfa da PNCA <http://www.pnca.com.br>
+# Interface gr√°fica para gerenciar o Kit Alfa da PNCA <http://www.pnca.com.br>
 #
 # Autor: Leandro Augusto Fogolin Pereira <leandro@linuxmag.com.br>
 #
@@ -91,7 +91,7 @@ class AlfaSensorThread(threading.Thread):
 	
       self.release()
 	
-class Widgets:
+class Widgets(object):
   """ Makes it easier to address a Glade window's widgets. Make
   every window this class' subclass, then access the widgets as
   if they were objects attributes.
@@ -213,6 +213,22 @@ class MainWindow(Widgets):
       self._alfa.queueCommand('soundStart', freq)
     else:
       self._alfa.queueCommand('soundStop')
+  
+  def sclServoAValueChanged(self, *args):
+    angle = self._alfa.getServoApproximateAngle('A', ceil(self.sclServoA.get_value()))
+    self._alfa.queueCommand('moveServo', 'A', angle)
+
+  def sclServoBValueChanged(self, *args):
+    angle = self._alfa.getServoApproximateAngle('B', ceil(self.sclServoB.get_value()))
+    self._alfa.queueCommand('moveServo', 'B', angle)
+    
+  def sclServoCValueChanged(self, *args):
+    angle = self._alfa.getServoApproximateAngle('C', ceil(self.sclServoC.get_value()))
+    self._alfa.queueCommand('moveServo', 'C', angle)
+    
+  def sclServoDValueChanged(self, *args):
+    angle = self._alfa.getServoApproximateAngle('D', ceil(self.sclServoD.get_value()))
+    self._alfa.queueCommand('moveServo', 'D', angle)
 
   def btnQuitClicked(self, *args):
     if self._connected:
@@ -273,14 +289,14 @@ class MainWindow(Widgets):
                 'btnPlaySound', 'btnMotorStop', 'btnQuit' ]
     self.connectSignals('clicked', widgets)
     
-    widgets = [ 'sclMotorPower', 'sclSndFreq' ]
+    widgets = [ 'sclMotorPower', 'sclSndFreq', 'sclServoA',
+                'sclServoB', 'sclServoC', 'sclServoD' ]
     self.connectSignals('value-changed', widgets)
 
     self.wndMain.connect('delete-event', self.btnQuitClicked, None)
     gobject.timeout_add(5, self._updateSensors, self)
 
     self.cmbSerial.set_active(0)
-    self.cmbSerial.set_sensitive(False)
     self.vbxControls.set_sensitive(False)
     
     swin = gtk.ScrolledWindow()
