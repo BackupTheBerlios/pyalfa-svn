@@ -314,5 +314,5 @@ class MainWindow(Widgets):
     self.wndMain.show()
 
 if __name__ == '__main__':
-  mw = MainWindow()
+  MainWindow()
   gtk.main()
