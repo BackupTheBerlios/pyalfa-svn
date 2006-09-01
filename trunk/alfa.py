@@ -133,6 +133,8 @@ class Alfa(object):
 	     "MOTBat" :     sensors[9],
 	     "MOTERR" : not sensors[10],
 	     "BtEnt"  : not sensors[11] }
+  def setServoTable(self, servo, tabela):
+    SERVO_ANGLE_TABLE[servo] = table
 
   def getServoApproximateAngle(self, servo, angle):
     angle = int(angle)
