@@ -14,28 +14,10 @@ import sys
 
 from math import ceil
 
-class AlfaSensorThread(threading.Thread):
-  """ This thread polls the sensors and executes commands either
-  synchronized mode (immediateCommand) or in asynchronized mode
-  (queueCommand). Synchronized commmands may return value, asynchronized
-  ones do not return values.
-  
-  Whenever this thread is running, sensor data may be acquired by
-  reading the 'sensors' attribute.  """
-  
-  def __init__(self):
-    """ Initializes the sensor polling thread. May raise
-    AlfaException("RobotNotResponding") if robot does
-    not answer to a ping request. """
-    
-    threading.Thread.__init__(self)
-    self.done = 0
-
-    lock = threading.RLock()
-    self.acquire = lock.acquire
-    self.release = lock.release
-
-    self._alfa = alfa.Alfa()
+""" Base class for AlfaSensorThread and AlfaSensorNonThreaded """
+class AlfaSensor(object):
+  def __init__(self, port):
+    self._alfa = alfa.Alfa(port)
     if not self._alfa.ping():
       raise alfa.AlfaException("RobotNotResponding")
  
@@ -46,16 +28,43 @@ class AlfaSensorThread(threading.Thread):
 		     "MOTBat": 0, "BtEnt": 0, "MOTERR": 0 }
 
   def queueCommand(self, cmdname, *args):
-    """ Queues a command to be executed in the thread main loop.
-    cmdname must be a valid method of Alfa."""
-    
     self._cmdqueue.append((cmdname, args))
 
   def stop(self):
-    """ Stops the thread and closes the connection. """
     self.done = True
     del(self._alfa)
+  
+  def stop(self):
+    pass
+  
+  def immediateCommand(self, cmdname, *args):
+    pass
     
+  def run(self):
+    pass
+    
+class AlfaSensorThread(threading.Thread, AlfaSensor):
+  """ This thread polls the sensors and executes commands either
+  synchronized mode (immediateCommand) or in asynchronized mode
+  (queueCommand). Synchronized commmands may return value, asynchronized
+  ones do not return values.
+  
+  Whenever this thread is running, sensor data may be acquired by
+  reading the 'sensors' attribute.  """
+  
+  def __init__(self, port = None):
+    """ Initializes the sensor polling thread. May raise
+    AlfaException("RobotNotResponding") if robot does
+    not answer to a ping request. """
+    
+    AlfaSensor.__init__(self, port)
+    threading.Thread.__init__(self)
+    self.done = False
+
+    lock = threading.RLock()
+    self.acquire = lock.acquire
+    self.release = lock.release
+
   def immediateCommand(self, cmdname, *args):
     """ Executes a command immediately.
     cmdname must be a valid method of Alfa. """
@@ -90,6 +99,37 @@ class AlfaSensorThread(threading.Thread):
           self.immediateCommand(cmdname, *args)
 	
       self.release()
+
+class AlfaSensorNonThreaded(AlfaSensor):
+  def __init__(self, port = None):
+    AlfaSensor.__init__(self, port)
+    
+  def queueCommand(self, cmdname, *args):
+    self._cmdqueue.append((cmdname, args))
+
+  def immediateCommand(self, cmdname, *args):
+    if not hasattr(self._alfa, cmdname):
+      raise alfa.AlfaException("InvalidCommand")
+
+    self._lastcmd = (cmdname, args)
+    return getattr(self._alfa, cmdname)(*args)
+
+  def start(self):
+    """ Stub """
+    pass
+    
+  def run(self):
+    if self._cmdqueue:
+      cmdname, args = self._cmdqueue.pop(0)
+      self.immediateCommand(cmdname, *args)
+      
+    try:
+      self.sensors = self._alfa.readSensors()
+    except:
+      # The last command failed. Execute it again.
+      if self._lastcmd:
+        cmdname, args = self._lastcmd
+        self.immediateCommand(cmdname, *args)
 	
 class Widgets(object):
   """ Makes it easier to address a Glade window's widgets. Make
@@ -141,16 +181,22 @@ class MainWindow(Widgets):
   """ The main terminal window. """
   
   def _connect(self):
+    port = self.cmbSerial.get_active_text()
+    
     try:
-      self._alfa = AlfaSensorThread()
+      if self._use_thread:
+        self._alfa = AlfaSensorThread(port)
+      else:
+        self._alfa = AlfaSensorNonThreaded(port)
     except alfa.AlfaException:
       dialog = gtk.MessageDialog(type = gtk.MESSAGE_ERROR,
                                    buttons = gtk.BUTTONS_CLOSE)
       dialog.set_markup("<b><big>O robô não responde.</big></b>\n\n" \
                         "Favor verificar se:\n" \
                         " \342\200\242 O robô está conectado à serial\n" \
+                        " \342\200\242 Você possui permissão para acessar '%s'\n" \
                         " \342\200\242 O robô está ligado\n" \
-                        " \342\200\242 A luz amarela está acesa")
+                        " \342\200\242 A luz amarela está acesa" % port)
       dialog.run()
       dialog.destroy()
 
@@ -236,11 +282,14 @@ class MainWindow(Widgets):
     gtk.main_quit()
   
   def _updateSensors(self, *args):
-    if self._connected and (self._alfa.sensors != self._sensors or self._sensorReadCount > 10):
+    if self._connected:
+      if not self._use_thread:
+        self._alfa.run()
+      
+      if self._alfa.sensors != self._sensors:
+        return
+        
       sensors = self._sensors = self._alfa.sensors
-      self._sensorReadCount += 1
-      if self._sensorReadCount > 10:
-        self._sensorReadCount = 0
 
       self.sensorS1.set_active(sensors["S1"])
       self.sensorS2.set_active(sensors["S2"])
@@ -276,13 +325,14 @@ class MainWindow(Widgets):
     if self._connected and self.btnPlaySound.get_active():
       self.btnPlaySoundClicked()
 
-  def __init__(self):
+  def __init__(self, use_thread = False):
     Widgets.__init__(self, "legalgtk.glade")
 
     self._connected = False
     self._alfa = None
     self._sensors = None
     self._sensorReadCount = 0
+    self._use_thread = use_thread
 
     widgets = [ 'btnConnect', 'btnMotorUp', 'btnMotorDown',
                 'btnMotorLeft', 'btnMotorRight',
@@ -294,7 +344,11 @@ class MainWindow(Widgets):
     self.connectSignals('value-changed', widgets)
 
     self.wndMain.connect('delete-event', self.btnQuitClicked, None)
-    gobject.timeout_add(5, self._updateSensors, self)
+    
+    if self._use_thread:
+      gobject.timeout_add(5, self._updateSensors, self)
+    else:
+      gobject.idle_add(self._updateSensors, self)
 
     self.cmbSerial.set_active(0)
     self.vbxControls.set_sensitive(False)
@@ -314,5 +368,5 @@ class MainWindow(Widgets):
     self.wndMain.show()
 
 if __name__ == '__main__':
-  MainWindow()
+  MainWindow(use_thread = False)
   gtk.main()

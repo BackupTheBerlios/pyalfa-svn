@@ -36,16 +36,16 @@ class AlfaException:
     return self._cod == cod
 
 class Alfa(object):
-  def __init__(self):
+  def __init__(self, serial_port = '/dev/ttyS0'):
     """ Opens the connection with the robot. """
-    
+
     self._mode = MODE_NORMAL
-    self._md = 0
-    self._me = 0
+    self._motor_right = 0
+    self._motor_left = 0
     self._sound = False
 
     try:
-      self._serial = serial.Serial(0)
+      self._serial = serial.Serial(port = serial_port)
       self._serial.timeout = 0.1
     except serial.serialutil.SerialException:
       raise AlfaException("SerialPortError")
@@ -73,7 +73,7 @@ class Alfa(object):
     do jeito que escrevi acima?   -- Leandro
     """
     if self._mode == mode: return
-    if self._md != 0 or self._me != 0: 
+    if self._motor_right != 0 or self._motor_left != 0: 
       raise AlfaException("MotorOnError")
     
     if self._sound:
@@ -198,12 +198,12 @@ class Alfa(object):
     self._setMode(MODE_CAPTURE)
 
     if motor == MOTOR_BOTH or motor == MOTOR_LEFT:
-      self._me = speed - 11
+      self._motor_left = speed - 11
       self._sendCommand("Me")
       self._sendCommand("%d" % speed)
 
     if motor == MOTOR_BOTH or motor == MOTOR_RIGHT:
-      self._md = speed - 11
+      self._motor_right = speed - 11
       self._sendCommand("Md")
       self._sendCommand("%d" % speed)
   
@@ -243,7 +243,7 @@ class Alfa(object):
   def __del__(self):
     if self._sound:
       self.soundStop()
-    if self._me != 0 or self._md != 0:
+    if self._motor_left != 0 or self._motor_right != 0:
       self.motorSpeed(0)
     self._setMode(MODE_NORMAL)
     
