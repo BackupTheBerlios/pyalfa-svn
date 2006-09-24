@@ -133,34 +133,35 @@ class Alfa(object):
 	     "MOTBat" :     sensors[9],
 	     "MOTERR" : not sensors[10],
 	     "BtEnt"  : not sensors[11] }
+
   def setServoTable(self, servo, tabela):
     SERVO_ANGLE_TABLE[servo] = table
 
   def getServoApproximateAngle(self, servo, angle):
     angle = int(angle)
   
-    if not SERVO_ANGLE_TABLE.haskey(id):
+    if not SERVO_ANGLE_TABLE.has_key(servo):
       raise AlfaException("InvalidServo")
-    if SERVO_ANGLE_TABLE[id].haskey(angle):
-      return SERVO_ANGLE_TABLE[id][angle]
+    if SERVO_ANGLE_TABLE[servo].has_key(angle):
+      return SERVO_ANGLE_TABLE[servo][angle]
     
-    for a in sorted(SERVO_ANGLE_TABLE[id].keys()):
+    for a in sorted(SERVO_ANGLE_TABLE[servo].keys()):
       if angle >= a:
         return a
     
     raise AlfaException("InvalidAngle")
     
-  def moveServo(self, id, angle):
+  def moveServo(self, servo, angle):
     angle = int(angle)
   
-    if not SERVO_ANGLE_TABLE.haskey(id):
+    if not SERVO_ANGLE_TABLE.has_key(servo):
       raise AlfaException("InvalidServo")
-    if not SERVO_ANGLE_TABLE[id].haskey(angle):
-      raise AlfaException("InvalidAngle")
+    if not SERVO_ANGLE_TABLE[id].has_key(angle):
+      angle = self.getServoApproximateAngle(servo, angle)
       
     self._setMode(MODE_CAPTURE)
-    self._sendcommand("M%s" % SERVO[id])
-    self._sendcommand("%d" % SERVO_ANGLE_TABLE[id][angle]) 
+    self._sendCommand("M%s" % SERVO[servo])
+    self._sendCommand("%d" % SERVO_ANGLE_TABLE[servo][angle]) 
 
   def identify(self):
     """ Returns a dictionary with the robot identification (name, version and revision). """
@@ -175,7 +176,7 @@ class Alfa(object):
  
     while response[0][0] != 'r':
       response = response[1:]
-      if response == []:
+      if not response:
         return self.identify()	      
     
     return { "name"    : response[0][1:], 
@@ -254,24 +255,22 @@ class Alfa(object):
 
 if __name__ == '__main__':
   l = Alfa()
-  print l.ping()
-  print l.readSensors()
-  print l.identify()
+  print "robo responde =>", l.ping()
+  print "sensores      =>", l.readSensors()
+  print "identificacao =>", l.identify()
   l.motorSpeed(10)
-  print "anda"
+  print "anda (potencia 10)"
   time.sleep(2)
   l.motorSpeed(0)
+  print "som por 2 segundos"
   l.sound(50, 2)
 
   try:
     while 1: 
-        a = l.readSensors()
-        #print "\033[H\033[2J"
-        #print a
-        k = a.keys()
-        k.sort()
-        for i in k:
-          print i, a[i]
+        sensors = l.readSensors()
+        
+        for sensor in sorted(sensors):
+          print sensor, sensors[sensor]
   except KeyboardInterrupt :
     del(l)
     print "Bye" 

@@ -190,7 +190,7 @@ class MainWindow(Widgets):
         self._alfa = AlfaSensorNonThreaded(port)
     except alfa.AlfaException:
       dialog = gtk.MessageDialog(type = gtk.MESSAGE_ERROR,
-                                   buttons = gtk.BUTTONS_CLOSE)
+                                 buttons = gtk.BUTTONS_CLOSE)
       dialog.set_markup("<b><big>O robô não responde.</big></b>\n\n" \
                         "Favor verificar se:\n" \
                         " \342\200\242 O robô está conectado à serial\n" \
@@ -286,9 +286,9 @@ class MainWindow(Widgets):
       if not self._use_thread:
         self._alfa.run()
       
-      if self._alfa.sensors != self._sensors:
+      if self._alfa.sensors == self._sensors:
         return
-        
+  
       sensors = self._sensors = self._alfa.sensors
 
       self.sensorS1.set_active(sensors["S1"])
