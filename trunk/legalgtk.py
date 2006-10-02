@@ -334,25 +334,37 @@ class MainWindow(Widgets):
     self._sensorReadCount = 0
     self._use_thread = use_thread
 
-    widgets = [ 'btnConnect', 'btnMotorUp', 'btnMotorDown',
+    # Connect the signals.
+    widgets = ( 'btnConnect', 'btnMotorUp', 'btnMotorDown',
                 'btnMotorLeft', 'btnMotorRight',
-                'btnPlaySound', 'btnMotorStop', 'btnQuit' ]
+                'btnPlaySound', 'btnMotorStop', 'btnQuit' )
     self.connectSignals('clicked', widgets)
     
-    widgets = [ 'sclMotorPower', 'sclSndFreq', 'sclServoA',
-                'sclServoB', 'sclServoC', 'sclServoD' ]
+    widgets = ( 'sclMotorPower', 'sclSndFreq', 'sclServoA',
+                'sclServoB', 'sclServoC', 'sclServoD' )
     self.connectSignals('value-changed', widgets)
 
     self.wndMain.connect('delete-event', self.btnQuitClicked, None)
     
+    # If asked to use threads, try to initialize GObject's threading support.
+    # If it fails, silently disable threads and use the non-threaded version.
+    if self._use_thread and gobject.main_depth() == 0:
+      try:
+        gobject.threads_init()
+      except:
+        self._use_thread = False
+        
     if self._use_thread:
       gobject.timeout_add(5, self._updateSensors, self)
     else:
       gobject.idle_add(self._updateSensors, self)
 
+    # Sets up the default values in the interface
     self.cmbSerial.set_active(0)
     self.vbxControls.set_sensitive(False)
+    self.btnMotorStop.set_active(True)
     
+    # Creates the Python console and add it to the interface.
     swin = gtk.ScrolledWindow()
     swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     swin.set_shadow_type(gtk.SHADOW_IN)
