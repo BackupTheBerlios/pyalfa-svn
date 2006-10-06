@@ -156,7 +156,7 @@ class Alfa(object):
   
     if not SERVO_ANGLE_TABLE.has_key(servo):
       raise AlfaException("InvalidServo")
-    if not SERVO_ANGLE_TABLE[id].has_key(angle):
+    if not SERVO_ANGLE_TABLE[servo].has_key(angle):
       angle = self.getServoApproximateAngle(servo, angle)
       
     self._setMode(MODE_CAPTURE)
