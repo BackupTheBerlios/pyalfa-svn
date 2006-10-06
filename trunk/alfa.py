@@ -36,20 +36,21 @@ class AlfaException:
     return self._cod == cod
 
 class Alfa(object):
-  def __init__(self, serial_port = '/dev/ttyS0'):
+  def __init__(self, serial_port = 0):
     """ Opens the connection with the robot. """
-
+    
     self._mode = MODE_NORMAL
     self._motor_right = 0
     self._motor_left = 0
     self._sound = False
-
+    
     try:
-      self._serial = serial.Serial(port = serial_port)
+      self._serial = serial.Serial(port = serial_port) 
+      """ port = 0 => primeira porta serial disponivel """
       self._serial.timeout = 0.1
     except serial.serialutil.SerialException:
       raise AlfaException("SerialPortError")
-
+    
     if not self.ping():
       raise AlfaException("RobotNotResponding")
 
@@ -114,7 +115,7 @@ class Alfa(object):
     
     self._setMode(MODE_CAPTURE)
     while self._serial.inWaiting() > 300:
-      self._serial.read(1)
+      self._serial.read(5)
     sensors = self._readResponse(300).split('\r\n')[1:]
 
     while sensors[0][0] != "a":
