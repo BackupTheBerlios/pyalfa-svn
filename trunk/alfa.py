@@ -78,7 +78,7 @@ class Alfa(object):
   def __init__(self, serial_port = 0, rate = 9600):
     """ Opens the connection with the robot. """
     
-    self.DELAY = 0.01
+    self.DELAY = 0.035
     self._mode = MODE_NORMAL
     self._motor_right = 0
     self._motor_left = 0
@@ -139,6 +139,7 @@ class Alfa(object):
 
   def _sendCommand(self, cmd):
     """ Sends a command to the robot. """
+    print cmd
     self._serial.flushInput()
     self._serial.write("%s\r" % cmd)
     self._serial.flushOutput()
@@ -243,18 +244,17 @@ class Alfa(object):
     if not (MOTOR_BOTH <= motor <= MOTOR_LEFT):
       raise AlfaException("InvalidMotor")
    
-    speed += 11
     self._setMode(MODE_CAPTURE)
 
     if motor == MOTOR_BOTH or motor == MOTOR_LEFT:
-      self._motor_left = speed - 11
+      self._motor_left = speed
       self._sendCommand("Me")
-      self._sendCommand("%d" % speed)
+      self._sendCommand("%d" % (speed+11))
 
     if motor == MOTOR_BOTH or motor == MOTOR_RIGHT:
-      self._motor_right = speed - 11
+      self._motor_right = speed
       self._sendCommand("Md")
-      self._sendCommand("%d" % speed)
+      self._sendCommand("%d" % (speed+11))
   
   def motorForward(self, speed):
     self.motorSpeed(speed)
@@ -295,14 +295,15 @@ class Alfa(object):
     if self._motor_left != 0 or self._motor_right != 0:
       self.motorSpeed(0)
     self._setMode(MODE_NORMAL)
-    
+    self._thread.alive = False
     try:
       self._serial.close()
     except AttributeError:
       pass
 
 if __name__ == '__main__':
-  l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
+  #l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
+  l = Alfa( serial_port = "/dev/ttyUSB0")
   print "robo responde =>", l.ping()
   #print "sensores      =>", l.readSensors()
   #print "identificacao =>", l.identify()
@@ -315,7 +316,7 @@ if __name__ == '__main__':
 
   try:
     while 1: 
-	time.sleep(0.0001)
+	time.sleep(0.00001)
         sensors = l.readSensors()
         for sensor in sorted(sensors):
           print sensor, sensors[sensor]
