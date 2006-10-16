@@ -36,7 +36,7 @@ class AlfaException:
     return self._cod == cod
 
 class Alfa(object):
-  def __init__(self, serial_port = 0):
+  def __init__(self, serial_port = 0, rate = 9600):
     """ Opens the connection with the robot. """
     
     self._mode = MODE_NORMAL
@@ -45,7 +45,7 @@ class Alfa(object):
     self._sound = False
     
     try:
-      self._serial = serial.Serial(port = serial_port) 
+      self._serial = serial.Serial(port = serial_port, baudrate=rate) 
       """ port = 0 => primeira porta serial disponivel """
       self._serial.timeout = 0.1
     except serial.serialutil.SerialException:
@@ -255,7 +255,7 @@ class Alfa(object):
       pass
 
 if __name__ == '__main__':
-  l = Alfa()
+  l = Alfa(serial_port = "/dev/ttyUSB0", rate = 57600)
   print "robo responde =>", l.ping()
   print "sensores      =>", l.readSensors()
   print "identificacao =>", l.identify()
