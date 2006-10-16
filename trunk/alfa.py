@@ -8,6 +8,7 @@
 
 import serial
 import time
+import threading
 
 MODE_NORMAL  = 0
 MODE_CAPTURE = 1
@@ -29,23 +30,63 @@ SERVO_ANGLE_TABLE = {
 
 SERVO = { 'A': 'o' , 'B': 'p', 'C': 'q', 'D': 'r'}
 
+SENSORS = {
+	'a' : 'S1' ,
+	'b' : 'S2' ,
+	'c' : 'S3' ,
+	'd' : 'S4' ,
+	'e' : 'S5' ,
+	'f' : 'S6' ,
+	'g' : 'S7' ,
+	'h' : 'S8' ,
+	'i' : 'CPUBat',
+	'j' : 'MOTBat',
+	'k' : 'MOTERR',
+	'l' : 'BtEnt' 
+}
+
 class AlfaException:
   def __init__(self, cod):
     self._cod = cod
   def __cmp__(self, cod):
     return self._cod == cod
 
+class ReadSensors_Alfa(threading.Thread):
+  def __init__ (self, serial):
+    threading.Thread.__init__(self)
+    self.serial  = serial
+    self.alive   = True
+    self.sensors = {}
+
+  def read(self): 
+    return self.sensors
+
+  def run(self):
+    while self.alive:
+      sensors = self.serial.read(100)
+      for i in sensors.split('\r\n'):
+        try:
+	  if i[0] in 'abefkl': #Digital
+            li = not int(i[1:])
+          else:
+            li = int(i[1:])
+          self.sensors[SENSORS[i[0]]] = li  
+        except (ValueError,KeyError,IndexError):
+          pass
+
 class Alfa(object):
   def __init__(self, serial_port = 0, rate = 9600):
     """ Opens the connection with the robot. """
     
+    self.DELAY = 0.01
     self._mode = MODE_NORMAL
     self._motor_right = 0
     self._motor_left = 0
     self._sound = False
-    
+#    self._thread = ReadSensors_Alfa()
+
     try:
-      self._serial = serial.Serial(port = serial_port, baudrate=rate) 
+      self._serial = serial.Serial(port = serial_port , baudrate=rate) 
       """ port = 0 => primeira porta serial disponivel """
       self._serial.timeout = 0.1
     except serial.serialutil.SerialException:
@@ -82,12 +123,15 @@ class Alfa(object):
     
     if self._mode == MODE_CAPTURE:
       self._sendCommand("Mf")
+      self._thread.alive = False;
       self._mode = MODE_NORMAL
       self._setMode(mode)
        
     elif self._mode == MODE_NORMAL:
       if mode == MODE_CAPTURE:
         self._sendCommand("Ms")
+        self._thread = ReadSensors_Alfa(self._serial)
+        self._thread.start()
 	self._mode = mode
     """
     da maneira que estava e possivel adcionar novos modos com facilidade! -- Fernando
@@ -98,7 +142,7 @@ class Alfa(object):
     self._serial.flushInput()
     self._serial.write("%s\r" % cmd)
     self._serial.flushOutput()
-    time.sleep(0.05)
+    time.sleep(self.DELAY)
   
   def _readResponse(self, bufsize = 10000):
     return self._serial.read(bufsize)
@@ -114,14 +158,18 @@ class Alfa(object):
     """ Returns a dictionary with the sensor values. """
     
     self._setMode(MODE_CAPTURE)
+    return self._thread.read()
+    """    return self.sensores.read()
+    
     while self._serial.inWaiting() > 300:
       self._serial.read(5)
     sensors = self._readResponse(300).split('\r\n')[1:]
 
     while sensors[0][0] != "a":
       sensors = sensors[1:]
-      
-    sensors = [ int(s[1:]) for s in sensors[0:12] ]
+    
+    print sensors [0:12]
+    sensors = [ int(s[1:]) for s in sensors[0:12] ] # Ranquei por erros inexplicaveis
     return { "S1"     : not sensors[0],
              "S2"     : not sensors[1],
 	     "S3"     :     sensors[2],
@@ -133,8 +181,7 @@ class Alfa(object):
 	     "CPUBat" :     sensors[8],
 	     "MOTBat" :     sensors[9],
 	     "MOTERR" : not sensors[10],
-	     "BtEnt"  : not sensors[11] }
-
+	     "BtEnt"  : not sensors[11] }"""
   def setServoTable(self, servo, tabela):
     SERVO_ANGLE_TABLE[servo] = table
 
@@ -255,21 +302,21 @@ class Alfa(object):
       pass
 
 if __name__ == '__main__':
-  l = Alfa(serial_port = "/dev/ttyUSB0", rate = 57600)
+  l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
   print "robo responde =>", l.ping()
-  print "sensores      =>", l.readSensors()
-  print "identificacao =>", l.identify()
-  l.motorSpeed(10)
-  print "anda (potencia 10)"
-  time.sleep(2)
-  l.motorSpeed(0)
-  print "som por 2 segundos"
-  l.sound(50, 2)
+  #print "sensores      =>", l.readSensors()
+  #print "identificacao =>", l.identify()
+  #l.motorSpeed(10)
+  #print "anda (potencia 10)"
+  #time.sleep(2)
+  #l.motorSpeed(0)
+  #print "som por 2 segundos"
+  #l.sound(50, 2)
 
   try:
     while 1: 
+	time.sleep(0.0001)
         sensors = l.readSensors()
-        
         for sensor in sorted(sensors):
           print sensor, sensors[sensor]
   except KeyboardInterrupt :
