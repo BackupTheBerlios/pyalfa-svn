@@ -148,29 +148,7 @@ class Alfa(object):
     
     self._setMode(MODE_CAPTURE)
     return self._thread.read()
-    """
-    
-    while self._serial.inWaiting() > 300:
-      self._serial.read(5)
-    sensors = self._readResponse(300).split('\r\n')[1:]
-
-    while sensors[0][0] != "a":
-      sensors = sensors[1:]
-    
-    print sensors [0:12]
-    sensors = [ int(s[1:]) for s in sensors[0:12] ] # Ranquei por erros inexplicaveis
-    return { "S1"     : not sensors[0],
-             "S2"     : not sensors[1],
-	     "S3"     :     sensors[2],
-	     "S4"     :     sensors[3],
-	     "S5"     : not sensors[4],
-	     "S6"     : not sensors[5], 
-	     "S7"     :     sensors[6],
-	     "S8"     :     sensors[7],
-	     "CPUBat" :     sensors[8],
-	     "MOTBat" :     sensors[9],
-	     "MOTERR" : not sensors[10],
-	     "BtEnt"  : not sensors[11] }"""
+  
   def setServoTable(self, servo, tabela):
     SERVO_ANGLE_TABLE[servo] = table
 
@@ -247,6 +225,7 @@ class Alfa(object):
   def motorForward(self, speed):
     self.motorSpeed(speed)
 
+  ## Metodos auxiliares para facilitar o uso da interface
   def motorBackward(self, speed):
     self.motorForward(-speed)
 
@@ -260,6 +239,7 @@ class Alfa(object):
 
   def motorStop(self):
     self.motorSpeed(0)
+  ## Fim dos metodos auxiliares
   
   def sound(self, frequency, duration):
     self.soundStart(frequency)
