@@ -83,7 +83,6 @@ class Alfa(object):
     self._motor_right = 0
     self._motor_left = 0
     self._sound = False
-#    self._thread = ReadSensors_Alfa()
 
     try:
       self._serial = serial.Serial(port = serial_port , baudrate=rate) 
@@ -92,28 +91,15 @@ class Alfa(object):
     except serial.serialutil.SerialException:
       raise AlfaException("SerialPortError")
     
+    #self._thread = ReadSensors_Alfa(self._serial)
+    
     if not self.ping():
       raise AlfaException("RobotNotResponding")
 
   def _setMode(self, mode):
     """ Sets the current operating mode. Raises AlfaException("InvalidMode") on invalid
     modes, does nothing if mode is current. """
-    """
-    if self._mode == mode:
-      return
-    elif mode == MODE_CAPTURE:
-      self._sendCommand("Ms")
-      self._mode = mode
-    elif mode == MODE_NORMAL:
-      self._sendCommand("Mf")
-      self._mode = mode
-    else:
-      raise AlfaException("InvalidMode")
-      
     
-    Esse codigo aqui eu nao consigo entender... pode explicar depois pq nao pode ser
-    do jeito que escrevi acima?   -- Leandro
-    """
     if self._mode == mode: return
     if self._motor_right != 0 or self._motor_left != 0: 
       raise AlfaException("MotorOnError")
@@ -129,9 +115,11 @@ class Alfa(object):
        
     elif self._mode == MODE_NORMAL:
       if mode == MODE_CAPTURE:
-        self._sendCommand("Ms")
         self._thread = ReadSensors_Alfa(self._serial)
-        self._thread.start()
+        self._thread.start() 
+        self._sendCommand("Ms")
+	time.sleep(0.05) # delay para dar tempo de pegar os sensores
+	# ODEIO ELE == procurar alternativa
 	self._mode = mode
     """
     da maneira que estava e possivel adcionar novos modos com facilidade! -- Fernando
@@ -160,7 +148,7 @@ class Alfa(object):
     
     self._setMode(MODE_CAPTURE)
     return self._thread.read()
-    """    return self.sensores.read()
+    """
     
     while self._serial.inWaiting() > 300:
       self._serial.read(5)
@@ -302,8 +290,8 @@ class Alfa(object):
       pass
 
 if __name__ == '__main__':
-  #l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
-  l = Alfa( serial_port = "/dev/ttyUSB0")
+  l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
+  #l = Alfa( serial_port = "/dev/ttyUSB0")
   print "robo responde =>", l.ping()
   #print "sensores      =>", l.readSensors()
   #print "identificacao =>", l.identify()
