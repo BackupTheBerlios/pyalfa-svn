@@ -58,6 +58,14 @@ class ReadSensors_Alfa(threading.Thread):
     self.alive   = True
     self.sensors = {}
 
+    for i in ['abcdefghijkl']
+      if i[0] in 'abefkl': #Digital
+        li = false
+      else:
+        li = 0
+      self.sensors[SENSORS[i[0]]] = li
+
+
   def read(self): 
     return self.sensors
 
@@ -118,8 +126,6 @@ class Alfa(object):
         self._thread = ReadSensors_Alfa(self._serial)
         self._thread.start() 
         self._sendCommand("Ms")
-	time.sleep(0.05) # delay para dar tempo de pegar os sensores
-	# ODEIO ELE == procurar alternativa
 	self._mode = mode
     """
     da maneira que estava e possivel adcionar novos modos com facilidade! -- Fernando
@@ -270,8 +276,8 @@ class Alfa(object):
       pass
 
 if __name__ == '__main__':
-  l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
-  #l = Alfa( serial_port = "/dev/ttyUSB0")
+  #l = Alfa( serial_port = "/dev/ttyUSB0", rate = 57600)
+  l = Alfa( serial_port = "/dev/ttyUSB0")
   print "robo responde =>", l.ping()
   #print "sensores      =>", l.readSensors()
   #print "identificacao =>", l.identify()
