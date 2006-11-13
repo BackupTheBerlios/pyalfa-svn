@@ -58,12 +58,12 @@ class ReadSensors_Alfa(threading.Thread):
     self.alive   = True
     self.sensors = {}
 
-    for i in ['abcdefghijkl']
-      if i[0] in 'abefkl': #Digital
-        li = false
+    for i in 'abcdefghijkl':
+      if i in 'abefkl': #Digital
+        li = False
       else:
         li = 0
-      self.sensors[SENSORS[i[0]]] = li
+      self.sensors[SENSORS[i]] = li
 
 
   def read(self): 
