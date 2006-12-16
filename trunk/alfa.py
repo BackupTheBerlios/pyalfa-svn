@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Biblioteca para gerenciar o Kit Alfa da PNCA <http://www.pnca.com.br>
 #
