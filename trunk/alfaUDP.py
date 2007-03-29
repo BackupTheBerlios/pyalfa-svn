@@ -3,8 +3,7 @@
 #
 # Biblioteca para gerenciar o Kit Alfa da PNCA <http://www.pnca.com.br>
 #
-# Autores: Fernando Paolieri Neto <fernando@cronuxs.net>
-#          Leandro Augusto Fogolin Pereira <leandro@linuxmag.com.br>
+# Autor: Fernando Paolieri Neto <fernando@cronuxs.net>
 #          
 #
 
