@@ -20,7 +20,7 @@ MOTOR_BOTH  = 0
 MOTOR_RIGHT = 1
 MOTOR_LEFT  = 2
 
-HOST = "192.168.0.10"
+HOST = "localhost"
 PORT = 4950
 
 RE_SONAR_READING = "<return>\n[\t ]*<get>([0-9]*)[\t ]*</get>\n</return>"
@@ -90,10 +90,10 @@ class Alfa(object):
 		return int(resp * 1024)
 		
 	
-	ret['S3'] = get_sonar(1)
-	ret['S4'] = get_sonar(1)
-	ret['S7'] = get_sonar(1)
-	ret['S8'] = get_sonar(1)
+	ret['S3'] = get_sonar(4)
+	ret['S4'] = get_sonar(5)
+	ret['S7'] = get_sonar(12)
+	ret['S8'] = get_sonar(13)
 	return ret
 
     def setServoTable(self, servo, table):
@@ -133,18 +133,18 @@ class Alfa(object):
 	elif self._motor_right == 0 and self._motor_left != 0 :
 		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*1000)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*-1000)
         	resp = self._sendCommand(cmd)
 		
 	elif self._motor_right != 0 and self._motor_left == 0 :
 		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*-1000)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*1000)
         	resp = self._sendCommand(cmd)
 	else :
 		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (abs(self._motor_right) - abs(self._motor_left))
 		resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (self._motor_right - self._motor_left)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (self._motor_left - self._motor_right)
         	resp = self._sendCommand(cmd)
 
     def motorForward(self, speed):
@@ -203,3 +203,4 @@ if __name__ == '__main__':
 
 
 """
+

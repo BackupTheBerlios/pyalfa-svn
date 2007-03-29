@@ -8,7 +8,8 @@
 
 import gtk, gtk.glade, gobject
 import threading
-import alfa
+#import alfa
+import alfaUDP as alfa
 import pyconsole
 import sys
 
@@ -286,8 +287,8 @@ class MainWindow(Widgets):
       if not self._use_thread:
         self._alfa.run()
       
-      if self._alfa.sensors == self._sensors:
-        return
+      #if self._alfa.sensors == self._sensors:
+      #  return
   
       sensors = self._sensors = self._alfa.sensors
 
