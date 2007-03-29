@@ -60,6 +60,7 @@ class Alfa(object):
 			signal.alarm(0)
 			flag = 0
 		except "SocketTimeOut":
+			print "Time Out"
 			pass
 	
 	#print resp
@@ -78,8 +79,8 @@ class Alfa(object):
 	ret['S6'] = True
 	ret['MOTERR'] = True
 	ret['BtEnt'] = True
-	ret['CPUBat'] = 0
-	ret['MOTBat'] = 0
+	ret['CPUBat'] = 500
+	ret['MOTBat'] = 900
 
 	reg = re.compile (RE_SONAR_READING)
 	def get_sonar(n) :		
@@ -110,15 +111,13 @@ class Alfa(object):
                  "revision": "BAAD"}
 
     def motorSpeed(self, speed, motor = MOTOR_BOTH):
+	speed = int(speed)
         if not (-10 <= speed <= 10):
             raise AlfaException("InvalidSpeed")
 
 	if not (MOTOR_BOTH <= motor <= MOTOR_LEFT):
             raise AlfaException("InvalidMotor")
-	
-	cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (speed*100)
-        resp = self._sendCommand(cmd)
-	
+		
         if motor == MOTOR_BOTH or motor == MOTOR_LEFT:
             self._motor_left = speed
 
@@ -131,19 +130,22 @@ class Alfa(object):
 		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % 0
         	resp = self._sendCommand(cmd)
 		
-	elif self._motor_right == 0 and self._motor_right != 0 :
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*100*-1)
+	elif self._motor_right == 0 and self._motor_left != 0 :
+		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
+        	resp = self._sendCommand(cmd)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*1000)
         	resp = self._sendCommand(cmd)
 		
-	elif self._motor_right != 0 and self._motor_right == 0 :
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*100)
+	elif self._motor_right != 0 and self._motor_left == 0 :
+		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
         	resp = self._sendCommand(cmd)
-	else : 
-		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (speed*100)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*-1000)
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (self._motor_right - self._motor_left)* 100
+	else :
+		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (abs(self._motor_right) - abs(self._motor_left))
+		resp = self._sendCommand(cmd)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (self._motor_right - self._motor_left)
         	resp = self._sendCommand(cmd)
-		
 
     def motorForward(self, speed):
         self.motorSpeed(speed)
@@ -152,12 +154,12 @@ class Alfa(object):
         self.motorForward(-speed)
 
     def motorLeft(self, speed):
-        self.motorSpeed( speed,MOTOR_LEFT)
-        self.motorSpeed(-speed,MOTOR_RIGHT)
+        self.motorSpeed(   speed,MOTOR_LEFT)
+        self.motorSpeed( - speed,MOTOR_RIGHT)
 	 
     def motorRight(self, speed):
-        self.motorSpeed(-speed,MOTOR_LEFT)
-        self.motorSpeed( speed,MOTOR_RIGHT)
+        self.motorSpeed( - speed,MOTOR_LEFT)
+        self.motorSpeed(   speed,MOTOR_RIGHT)
 	 
     def motorStop(self):
         self.motorSpeed(0)
@@ -182,13 +184,13 @@ if __name__ == '__main__':
     print "robo responde =>", l.ping()
     print "sensores      =>", l.readSensors()
     print "identificacao =>", l.identify()
-    l.motorSpeed(10)
-    print "anda (potencia 10)"
-    time.sleep(2)
-    l.motorSpeed(0)
-    print "som por 2 segundos"
-    l.sound(50, 2)
-
+    #l.motorSpeed(10)
+   #print "anda (potencia 10)"
+    #time.sleep(2)
+    #l.motorSpeed(0)
+    #print "som por 2 segundos"
+    #l.sound(50, 2)
+"""
     try:
         while 1: 
             time.sleep(0.00001)
@@ -200,3 +202,4 @@ if __name__ == '__main__':
         print "Bye" 
 
 
+"""
