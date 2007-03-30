@@ -7,6 +7,7 @@
 #          
 #
 
+import random
 import socket
 import time
 import re
@@ -72,27 +73,31 @@ class Alfa(object):
         """ Returns a dictionary with the sensor values. """
 	print "readSensors"
 	ret = {}
-	ret['S1'] = True
-	ret['S2'] = True
-	ret['S5'] = True
-	ret['S6'] = True
-	ret['MOTERR'] = True
-	ret['BtEnt'] = True
-	ret['CPUBat'] = 500
-	ret['MOTBat'] = 900
+	ret['S1'] = random.randint(0,1) == 0
+	ret['S2'] = random.randint(0,1) == 0
+	ret['S5'] = random.randint(0,1) == 0
+	ret['S6'] = random.randint(0,1) == 0
+	ret['MOTERR'] = random.randint(0,1) == 0
+	ret['BtEnt'] = random.randint(0,1) == 0
+	ret['CPUBat'] = 500 + random.randint(0,500)
+	ret['MOTBat'] = 800 + random.randint(0,200)
 
 	reg = re.compile (RE_SONAR_READING)
-	def get_sonar(n) :		
-		cmd  = "<program><get><name>getSonarRange</name><par>%d</par</get></program>" % n
-		resp = self._sendCommand(cmd)
+
+	def get_sonar(n):
+		cmd  = "<program><get><name>getSonarRange</name><par>%d</par></get></program>" % n
+		resp = reg.findall(self._sendCommand(cmd))[0]
 		resp = float(reg.findall(resp)[0]) / 5000
-		return int(resp * 1024)
-		
+		return resp * 1024
 	
 	ret['S3'] = get_sonar(4)
 	ret['S4'] = get_sonar(5)
 	ret['S7'] = get_sonar(12)
 	ret['S8'] = get_sonar(13)
+	
+	ret['POS'] = True
+	print ret['POS']
+
 	return ret
 
     def setServoTable(self, servo, table):
@@ -124,26 +129,26 @@ class Alfa(object):
             self._motor_right = speed
 	
 	if self._motor_right == self._motor_left :
-		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (speed*100)
+		cmd = "<program><async-op><name>setVel</name><par>%d</par></async-op></program>" % (speed*100)
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % 0
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par></async-op></program>" % 0
         	resp = self._sendCommand(cmd)
 		
 	elif self._motor_right == 0 and self._motor_left != 0 :
-		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
+		cmd = "<program><async-op><name>setVel</name><par>%d</par></async-op></program>" % 0
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*-1000)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par></async-op></program>" % (speed*-1000)
         	resp = self._sendCommand(cmd)
 		
 	elif self._motor_right != 0 and self._motor_left == 0 :
-		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % 0
+		cmd = "<program><async-op><name>setVel</name><par>%d</par></async-op></program>" % 0
         	resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (speed*1000)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par></async-op></program>" % (speed*1000)
         	resp = self._sendCommand(cmd)
 	else :
-		cmd = "<program><async-op><name>setVel</name><par>%d</par</async-op></program>" % (abs(self._motor_right) - abs(self._motor_left))
+		cmd = "<program><async-op><name>setVel</name><par>%d</par></async-op></program>" % (abs(self._motor_right) - abs(self._motor_left))
 		resp = self._sendCommand(cmd)
-		cmd = "<program><async-op><name>setRotVel</name><par>%d</par</async-op></program>" % (self._motor_left - self._motor_right)
+		cmd = "<program><async-op><name>setRotVel</name><par>%d</par></async-op></program>" % (self._motor_left - self._motor_right)
         	resp = self._sendCommand(cmd)
 
     def motorForward(self, speed):
@@ -189,7 +194,7 @@ if __name__ == '__main__':
     #l.motorSpeed(0)
     #print "som por 2 segundos"
     #l.sound(50, 2)
-"""
+
     try:
         while 1: 
             time.sleep(0.00001)
@@ -199,7 +204,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt :
         del(l)
         print "Bye" 
-
-
-"""
 

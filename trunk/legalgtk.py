@@ -325,6 +325,25 @@ class MainWindow(Widgets):
   def sclSndFreqValueChanged(self, range, *args):
     if self._connected and self.btnPlaySound.get_active():
       self.btnPlaySoundClicked()
+  
+  def wndMainKeyReleased(self, window, event, data):
+	if self._connected and event.keyval in (65362, 65364, 65361, 65363):
+		self.btnMotorStop.set_active(True)
+	
+	return False
+	
+  def wndMainKeyPressed(self, window, event, data):
+	if self._connected:
+		if event.keyval == 65362: # cima
+			self.btnMotorUp.set_active(True)
+		elif event.keyval == 65364: # baixo
+			self.btnMotorDown.set_active(True)
+		elif event.keyval == 65361: # esq
+			self.btnMotorLeft.set_active(True)
+		elif event.keyval == 65363: # dir
+			self.btnMotorRight.set_active(True)
+		
+	return False
 
   def __init__(self, use_thread = False):
     Widgets.__init__(self, "legalgtk.glade")
@@ -346,6 +365,8 @@ class MainWindow(Widgets):
     self.connectSignals('value-changed', widgets)
 
     self.wndMain.connect('delete-event', self.btnQuitClicked, None)
+#    self.wndMain.connect('key-press-event', self.wndMainKeyPressed, None)
+#    self.wndMain.connect('key-release-event', self.wndMainKeyReleased, None)
     
     # If asked to use threads, try to initialize GObject's threading support.
     # If it fails, silently disable threads and use the non-threaded version.
