@@ -24,6 +24,7 @@ HOST = "localhost"
 PORT = 4950
 
 RE_SONAR_READING = "<return>\n[\t ]*<get>([0-9]*)[\t ]*</get>\n</return>"
+RE_POSIT_READING = "<return>\n[\t ]*<get>([.0-9-]*);([.0-9-]*);([.0-9-]*)[\t ]*</get>\n</return>"
 
 def handler(signum,frame):
 	"""This is a handler function called when a SIGALRM is received, 
@@ -60,7 +61,7 @@ class Alfa(object):
 			signal.alarm(0)
 			flag = 0
 		except "SocketTimeOut":
-			print "Time Out"
+			print "Socket Timeout"
 			pass
 	
 	#print resp
@@ -71,7 +72,7 @@ class Alfa(object):
     
     def readSensors(self):
         """ Returns a dictionary with the sensor values. """
-	print "readSensors"
+	#print "readSensors"
 	ret = {}
 	ret['S1'] = random.randint(0,1) == 0
 	ret['S2'] = random.randint(0,1) == 0
@@ -81,22 +82,28 @@ class Alfa(object):
 	ret['BtEnt'] = random.randint(0,1) == 0
 	ret['CPUBat'] = 500 + random.randint(0,500)
 	ret['MOTBat'] = 800 + random.randint(0,200)
-
-	reg = re.compile (RE_SONAR_READING)
-
+	
 	def get_sonar(n):
+		reg = re.compile (RE_SONAR_READING)
 		cmd  = "<program><get><name>getSonarRange</name><par>%d</par></get></program>" % n
 		resp = reg.findall(self._sendCommand(cmd))[0]
-		resp = float(reg.findall(resp)[0]) / 5000
+		resp = float(resp) / 5000
 		return resp * 1024
 	
+	def get_position():
+		reg = re.compile (RE_POSIT_READING)
+		cmd = "<program><get><name>getPosition</name></get></program>"
+		resp = reg.findall(self._sendCommand(cmd))[0]
+		resp = [float(i) for i in resp]
+		return resp
+
 	ret['S3'] = get_sonar(4)
 	ret['S4'] = get_sonar(5)
 	ret['S7'] = get_sonar(12)
 	ret['S8'] = get_sonar(13)
 	
-	ret['POS'] = True
-	print ret['POS']
+	
+	ret['POS'] = get_position()
 
 	return ret
 
