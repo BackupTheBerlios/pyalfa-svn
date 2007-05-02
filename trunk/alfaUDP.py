@@ -87,8 +87,12 @@ class Alfa(object):
 		reg = re.compile (RE_SONAR_READING)
 		cmd  = "<program><get><name>getSonarRange</name><par>%d</par></get></program>" % n
 		resp = reg.findall(self._sendCommand(cmd))[0]
-		resp = float(resp) / 5000
-		return resp * 1024
+		resp = float(resp)
+		#resp = resp / 5000
+		#return resp * 1024
+		resp = resp/2
+		if (resp > 1024):	return 1024
+		else:			return resp
 	
 	def get_position():
 		reg = re.compile (RE_POSIT_READING)
@@ -97,12 +101,10 @@ class Alfa(object):
 		resp = [float(i) for i in resp]
 		return resp
 
-	ret['S3'] = get_sonar(4)
-	ret['S4'] = get_sonar(5)
-	ret['S7'] = get_sonar(12)
-	ret['S8'] = get_sonar(13)
-	
-	
+	ret['S3'] = get_sonar(3)
+	ret['S4'] = get_sonar(4)
+	ret['S7'] = get_sonar(11)
+	ret['S8'] = get_sonar(12)
 	ret['POS'] = get_position()
 
 	return ret
