@@ -25,6 +25,7 @@ PORT = 4950
 
 RE_SONAR_READING = "<return>\n[\t ]*<get>([0-9]*)[\t ]*</get>\n</return>"
 RE_POSIT_READING = "<return>\n[\t ]*<get>([.0-9-]*);([.0-9-]*);([.0-9-]*)[\t ]*</get>\n</return>"
+RE_GET_DEFAULT   = "<return>\n[\t ]*<get>([.0-9-]*)[\t ]*</get>\n</return>"
 
 def handler(signum,frame):
 	"""This is a handler function called when a SIGALRM is received, 
@@ -100,12 +101,33 @@ class Alfa(object):
 		resp = reg.findall(self._sendCommand(cmd))[0]
 		resp = [float(i) for i in resp]
 		return resp
-
+	def get_robot_length():
+		reg = re.compile (RE_GET_DEFAULT)
+		cmd = "<program><get><name>getRobotLength</name></get></program>"
+		resp = reg.findall(self._sendCommand(cmd))
+		resp = float(resp[0])
+		return resp
+	def get_robot_width():
+		reg = re.compile (RE_GET_DEFAULT)
+		cmd = "<program><get><name>getRobotWidth</name></get></program>"
+		resp = reg.findall(self._sendCommand(cmd))
+		resp = float(resp[0])
+		return resp
+	def get_velocity():
+		reg = re.compile (RE_GET_DEFAULT)
+		cmd = "<program><get><name>getVel</name></get></program>"
+		resp = reg.findall(self._sendCommand(cmd))
+		resp = float(resp[0])
+		return resp
+	
 	ret['S3'] = get_sonar(3)
 	ret['S4'] = get_sonar(4)
 	ret['S7'] = get_sonar(11)
 	ret['S8'] = get_sonar(12)
 	ret['POS'] = get_position()
+	ret['LEN'] = get_robot_length()
+	ret['WID'] = get_robot_width()
+	ret['VEL'] = get_velocity()
 
 	return ret
 
