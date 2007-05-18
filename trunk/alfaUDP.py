@@ -91,7 +91,7 @@ class Alfa(object):
 		resp = float(resp)
 		#resp = resp / 5000
 		#return resp * 1024
-		resp = resp/2
+		if resp < 0 : resp += 360
 		if (resp > 1024):	return 1024
 		else:			return resp
 	
