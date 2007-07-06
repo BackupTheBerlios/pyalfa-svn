@@ -9,7 +9,8 @@ def norm_ent(ent) :
 def desn_sai(sai) :
   a = []
   for i in sai:
-  	a.append( i * (100 - 4) + 4 );
+  	#a.append( i * (100 - 4) + 4 );
+	a.append( i * (100 - 4) + 7 );
   return a;
 
 def sharp_neural(ent):
